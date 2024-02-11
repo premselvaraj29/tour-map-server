@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { URLSearchParams } from 'url';
+import { Client, auth } from "twitter-api-sdk";
 
 type TwitterConfig = {
   clientId: string;
@@ -19,93 +20,70 @@ type TwitterUserResponse = {
   data: TwitterUser;
 };
 
-type TwitterUser = {
+export type TwitterUser = {
   id: string;
   name: string;
   username: string;
 };
 
+export type TokenDetail = {
+  accessToken: string,
+  tokenType: string,
+  scope: string,
+  refresh_token: string,
+  expires_at: number
+}
+
+const STATE = 'pagal:state'
+
 @Injectable()
 export class TwitterService {
-  private baseUrl = 'https://api.twitter.com/2';
+  private readonly baseUrl = 'https://api.twitter.com/2';
   private config: TwitterConfig;
+  private client: Client
+  private authClient: auth.OAuth2User
 
   constructor(private configService: ConfigService) {
     this.config = this.configService.get<TwitterConfig>('twitter');
+    this.client = this.newTwitterClient();
   }
 
-  private generateBasicAuthToken() {
-    return Buffer.from(
-      `${this.config.clientId}:${this.config.clientSecret}`,
-      'utf-8',
-    ).toString('base64');
-  }
-
-  async getOauthToken(
-    code: string,
-    error?: string,
-  ): Promise<TwitterTokenResponse> {
-    if (error) {
-      console.log({
-        message: 'Error occured.',
-        details: { error },
-      });
-
-      throw new Error(
-        `Error from twitter oauth. Message: ${JSON.stringify(error)}`,
-      );
-    }
-
-    const tokenParam = {
+  private newTwitterClient() {
+    this.authClient = new auth.OAuth2User({
       client_id: this.config.clientId,
-      code_verifier: '8KxxO-RPl0bLSxX5AWwgdiFbMnry_VOKzFeIlVA7NoA',
-      redirect_uri: 'http://www.localhost:3000/twitter/oauth',
-      grant_type: 'authorization_code',
-    };
+      client_secret: this.config.clientSecret,
+      callback: "http://www.localhost:3000/twitter/oauth",
+      scopes: ["tweet.read", "users.read", "offline.access"],
+    });
+    return new Client(this.authClient)
+  }
 
+  generateAuthUrl() {
+    const authUrl = this.authClient.generateAuthURL({
+      state: STATE,
+      code_challenge_method: 's256',
+    })
+    return authUrl;
+  }
+
+  async requestAccessToken(code: string, state: string): Promise<{ token: any }> {
+    if (state !== STATE) throw new Error("State isn't matching.")
     try {
-      const body = new URLSearchParams({ ...tokenParam, code }).toString();
-      const basicAuthToken = this.generateBasicAuthToken();
-      const res = await axios.post<TwitterTokenResponse>(
-        `${this.baseUrl}/oauth2/token`,
-        body,
-        {
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            Authorization: `Basic ${basicAuthToken}`,
-          },
-        },
-      );
-      return res.data;
+      const token = await this.authClient.requestAccessToken(code)
+      return token
     } catch (error) {
-      console.log({
-        message: 'Error occured.',
-        details: { error, response: error.response.data },
-      });
-      throw error;
+      console.log({ scope: 'requestAccessToken', error })
+      Logger.error(error);
     }
   }
 
-  async getUser(accessToken: string, tokenType: string) {
-    try {
-      const response = await axios.get<TwitterUserResponse>(
-        `${this.baseUrl}/users/me`,
-        {
-          headers: {
-            'Content-type': 'application/json',
-            Authorization: `${tokenType} ${accessToken}`,
-          },
-        },
-      );
+  async getUserDetail() {
+    const details = (await this.client.users.findMyUser()).data ;
+    return details as TwitterUser;
+  }
 
-      const userDetails = response.data.data ?? null;
-      console.log({
-        message: 'User Details',
-        userDetails,
-      });
-      return userDetails;
-    } catch (error) {
-      return null;
-    }
+  setUpClient(token: string) {
+    this.client = new Client(token);
+    return this
   }
 }
