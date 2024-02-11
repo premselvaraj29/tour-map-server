@@ -7,7 +7,8 @@ import { NaturalLanguageModule } from './natural-language/natural-language.modul
 import { GooglePlacesModule } from './google-places/google-places.module';
 import { TwitterModule } from './twitter/twitter.module';
 import config from './config';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { BullModule } from '@nestjs/bull';
 
 @Module({
   imports: [
@@ -18,6 +19,16 @@ import { ConfigModule } from '@nestjs/config';
     ConfigModule.forRoot({
       load: [config],
     }),
+    BullModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        redis: {
+          host: configService.get<string>('redis.host'),
+          port: configService.get<number>('redis.port'),
+        },
+      }),
+      inject: [ConfigService],
+    })
   ],
   controllers: [AppController],
   providers: [AppService],
