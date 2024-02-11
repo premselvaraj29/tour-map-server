@@ -9,6 +9,7 @@ import { TwitterModule } from './twitter/twitter.module';
 import config from './config';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { BullModule } from '@nestjs/bull';
+import { MongooseModule } from '@nestjs/mongoose';
 
 @Module({
   imports: [
@@ -28,7 +29,14 @@ import { BullModule } from '@nestjs/bull';
         },
       }),
       inject: [ConfigService],
-    })
+    }),
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        uri: configService.get<string>('database.uri'),
+      }),
+      inject: [ConfigService],
+    }),
   ],
   controllers: [AppController],
   providers: [AppService],
