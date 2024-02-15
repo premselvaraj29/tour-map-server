@@ -1,9 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import * as language from '@google-cloud/language';
 import { ITextAnalysisResult } from 'src/models/ITextAnalysisResult';
+import { OnEvent } from '@nestjs/event-emitter';
+import { DbService } from 'src/db-service/db.service';
+import { TwitterService } from 'src/twitter/twitter.service';
 
 @Injectable()
 export class NaturalLanguageService {
+  constructor(
+    private dbService: DbService,
+    private twitterService: TwitterService,
+  ) {}
+
   async analyze(tweets: { text: string }[]) {
     const results: ITextAnalysisResult[] = [];
     for (const tweet of tweets) {
@@ -44,5 +52,15 @@ export class NaturalLanguageService {
       }
     }
     return results;
+  }
+
+  @OnEvent('user-tweets')
+  async handleUserTweets(payload: { tweets: any[]; userDetails: any }) {
+    const results = await this.analyze(payload.tweets);
+    const dbPayload = {
+      [payload.userDetails.id]: results,
+    };
+
+    await this.dbService.getDb().collection('sentiments').insertOne(dbPayload);
   }
 }

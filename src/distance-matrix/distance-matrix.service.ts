@@ -13,7 +13,7 @@ export class DistanceMatrixService {
       }
       let destinationStr = destinations.join('|');
       const URL = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${originStr}
-      &destinations=${destinationStr}&key=YOUR_API_KEY`;
+      &destinations=${destinationStr}&key=AIzaSyCYYEd7y5K5e0kSPk-J39b2jO31qL7es1s`;
       const response = await axios.get(URL);
       const elements = response.data.rows[0].elements;
       const distances = elements.map((e) => e.distance.value);

@@ -10,11 +10,11 @@ export class TwitterController {
   constructor(
     private readonly configService: ConfigService,
     private readonly twitterService: TwitterService,
-    @InjectQueue('twitter') private readonly twitterQueue: Queue
-  ) { }
+    @InjectQueue('twitter') private readonly twitterQueue: Queue,
+  ) {}
 
   @Get('/login')
-  async login(@Res({ passthrough: true }) res: Response,) {
+  async login(@Res({ passthrough: true }) res: Response) {
     const url = this.twitterService.generateAuthUrl();
     return res.redirect(302, url);
   }
@@ -27,14 +27,12 @@ export class TwitterController {
     @Query('error') error?: string,
   ) {
     const { token } = await this.twitterService.requestAccessToken(code, state);
+    const userDetails = await this.twitterService.getUserDetail();
 
     // Trigger twitter job to get user data
-    this.twitterQueue.add('user-tweets', { token }, { delay: 3000 })
-      .catch((error) => {
-        Logger.log({ error }, 'Queue')
-      })
-
-    const userDetails = await this.twitterService.getUserDetail();
+    this.twitterQueue.add('user-tweets', { token }).catch((error) => {
+      Logger.log({ error }, 'Queue');
+    });
 
     res.cookie('user_name', userDetails.username, {
       httpOnly: false,

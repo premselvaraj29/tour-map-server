@@ -10,16 +10,17 @@ import config from './config';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { BullModule } from '@nestjs/bull';
 import { MongooseModule } from '@nestjs/mongoose';
+import { RedisService } from './redis-service/redis.service';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { RedisModule } from './redis-service/redis.module';
+import { DbModule } from './db-service/db.module';
 
 @Module({
   imports: [
-    DistanceMatrixModule,
-    NaturalLanguageModule,
-    GooglePlacesModule,
-    TwitterModule,
     ConfigModule.forRoot({
       load: [config],
     }),
+    EventEmitterModule.forRoot(),
     BullModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -37,6 +38,12 @@ import { MongooseModule } from '@nestjs/mongoose';
       }),
       inject: [ConfigService],
     }),
+    DistanceMatrixModule,
+    NaturalLanguageModule,
+    GooglePlacesModule,
+    RedisModule,
+    TwitterModule,
+    DbModule,
   ],
   controllers: [AppController],
   providers: [AppService],

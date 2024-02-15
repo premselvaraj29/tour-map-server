@@ -6,6 +6,7 @@ import { BullModule } from '@nestjs/bull';
 import { TwitterProcessor } from './twitter.processor';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Tweet, TweetSchema } from 'src/schema/tweet.schema';
+import { RedisModule } from 'src/redis-service/redis.module';
 
 @Module({
   imports: [
@@ -19,8 +20,10 @@ import { Tweet, TweetSchema } from 'src/schema/tweet.schema';
     BullModule.registerQueueAsync({
       name: 'twitter',
     }),
+    RedisModule,
   ],
   controllers: [TwitterController],
   providers: [TwitterService, TwitterProcessor],
+  exports: [TwitterService],
 })
 export class TwitterModule {}

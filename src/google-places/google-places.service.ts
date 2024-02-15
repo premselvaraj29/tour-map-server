@@ -12,7 +12,7 @@ export class GooglePlacesService {
           location: '45.49668500000002,-73.57755583068695',
           query: textQuery,
           radius: '1000',
-          key: 'YOUR_API_KEY',
+          key: 'AIzaSyCYYEd7y5K5e0kSPk-J39b2jO31qL7es1s',
         },
       },
     );
