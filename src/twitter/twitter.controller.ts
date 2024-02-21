@@ -34,6 +34,13 @@ export class TwitterController {
       Logger.log({ error }, 'Queue');
     });
 
+    res.cookie('user_id', userDetails.id, {
+      httpOnly: false,
+      secure: false,
+      sameSite: 'strict',
+      expires: new Date(Date.now() + 7200 * 1000),
+    });
+
     res.cookie('user_name', userDetails.username, {
       httpOnly: false,
       secure: false,

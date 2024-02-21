@@ -21,7 +21,7 @@ export class NaturalLanguageService {
         type: 'PLAIN_TEXT' as const,
       };
       const result = await client.analyzeSentiment({ document });
-      console.log(result);
+      // console.log(result);
       const sentiment = result[0].documentSentiment;
 
       const classificationModelOptions = {
@@ -34,8 +34,8 @@ export class NaturalLanguageService {
         document: document,
         classificationModelOptions,
       });
-      console.log('TEXT CLASSIFICATION IS ');
-      console.log(responseCategories[0].categories);
+      // console.log('TEXT CLASSIFICATION IS ');
+      // console.log(responseCategories[0].categories);
 
       if (sentiment.score > 0.1) {
         //If the score is greater than 0.1, then the sentiment is positive
@@ -58,9 +58,25 @@ export class NaturalLanguageService {
   async handleUserTweets(payload: { tweets: any[]; userDetails: any }) {
     const results = await this.analyze(payload.tweets);
     const dbPayload = {
-      [payload.userDetails.id]: results,
+      userId: payload.userDetails.id,
+      sentiments: results,
     };
 
-    await this.dbService.getDb().collection('sentiments').insertOne(dbPayload);
+    if (
+      await this.dbService
+        .getDb()
+        .collection('sentiments')
+        .findOne({ username: payload.userDetails.id })
+    ) {
+      await this.dbService
+        .getDb()
+        .collection('sentiments')
+        .findOneAndReplace({ username: payload.userDetails.id }, dbPayload);
+    } else {
+      await this.dbService
+        .getDb()
+        .collection('sentiments')
+        .insertOne(dbPayload);
+    }
   }
 }

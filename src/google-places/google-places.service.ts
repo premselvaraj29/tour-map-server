@@ -11,8 +11,10 @@ export class GooglePlacesService {
         params: {
           location: '45.49668500000002,-73.57755583068695',
           query: textQuery,
-          radius: '1000',
+          radius: '500',
           key: 'AIzaSyCYYEd7y5K5e0kSPk-J39b2jO31qL7es1s',
+          opennow: true,
+          minprice: 2,
         },
       },
     );
@@ -20,3 +22,4 @@ export class GooglePlacesService {
     return response.data;
   }
 }
+// opennow: true,
