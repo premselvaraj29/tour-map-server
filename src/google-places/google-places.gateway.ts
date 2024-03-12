@@ -8,6 +8,7 @@ import { Server } from 'socket.io';
 import { DbService } from 'src/db-service/db.service';
 import { flatten, uniq } from 'lodash';
 import { GooglePlacesService } from './google-places.service';
+import { PlaceFilter } from 'src/type';
 
 @WebSocketGateway({
   cors: {
@@ -21,19 +22,19 @@ export class RecommendationsGateway {
   constructor(
     private dbService: DbService,
     private placesService: GooglePlacesService,
-  ) {}
+  ) { }
 
   @SubscribeMessage('requestRecommendations')
   async handleRecommendationRequest(client: any, payload: any): Promise<void> {
-    const userId = payload.userId;
+    const { options, userId } = payload
     // Fetch recommendations for the user from Redis or your database
-    const recommendations = await this.getRecommendationsForUser(userId);
+    const recommendations = await this.getRecommendationsForUser(userId, options);
     // Emit the recommendations to the requesting client
     client.emit('updateRecommendations', recommendations);
   }
 
   // Mock function to simulate fetching recommendations
-  private async getRecommendationsForUser(userId: string) {
+  private async getRecommendationsForUser(userId: string, options?: PlaceFilter) {
     // Replace this with actual fetching logic
 
     const sentiments = await this.dbService
@@ -82,13 +83,12 @@ export class RecommendationsGateway {
         const subCategories = categorySubCategory[key];
         subCategories.forEach((subCategory) => {
           placesPromises.push(
-            this.placesService.getPlaces(`${subCategory} near me`),
+            this.placesService.getPlaces(`${subCategory} near me`, options),
           );
         });
       }
 
       const places = await Promise.all(placesPromises);
-      console.log(places);
       return places;
     }
   }
