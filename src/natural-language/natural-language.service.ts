@@ -56,6 +56,14 @@ export class NaturalLanguageService {
 
   @OnEvent('user-tweets')
   async handleUserTweets(payload: { tweets: any[]; userDetails: any }) {
+
+    console.log({
+      scope: 'NaturalLanguageService::handleUserTweets',
+      message: 'Received user-tweets event',
+      tweetsLength: payload.tweets.length,
+      userDetails: payload.userDetails
+    })
+
     const results = await this.analyze(payload.tweets);
     const dbPayload = {
       userId: payload.userDetails.id,
