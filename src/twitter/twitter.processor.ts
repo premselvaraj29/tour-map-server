@@ -1,9 +1,21 @@
 import { Job } from 'bull';
-import { JOB_REF, Process, Processor } from '@nestjs/bull';
 import { Inject } from '@nestjs/common';
-import { TokenDetail, TwitterService, TwitterUser } from './twitter.service';
 import { RedisService } from 'src/redis-service/redis.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { ConfigService } from '@nestjs/config';
+import { JOB_REF, Process, Processor } from '@nestjs/bull';
+import { TwitterService } from './twitter.service';
+import { UserTweetStatusService } from 'src/user-tweet-status/user-tweet-status.service';
+
+const wait = (miliSecond: number) => {
+  return new Promise((resolve) => {
+    setTimeout(resolve, miliSecond);
+  })
+}
+
+const getUnique = (array: any[]) => {
+  return [...new Set(array)];
+}
 
 @Processor('twitter')
 export class TwitterProcessor {
@@ -12,35 +24,117 @@ export class TwitterProcessor {
     private readonly twitterService: TwitterService,
     private redisService: RedisService,
     private eventEmitter: EventEmitter2,
-  ) {}
+    private readonly userTweetStatusService: UserTweetStatusService,
+    private readonly configService: ConfigService,
+  ) { }
 
-  @Process('user-tweets')
-  // TODO: Use token to get the tweets and store in DB
-  async handleUserTweets(job: Job<{ token: any }>) {
-    const { token } = job.data;
+  /**
+   * Checks if the tweets were already fetched. This is to reduce the number of calls to Twitter
+   * which throws Too Many Request error
+   */
+  private async shouldProcess(userId: string): Promise<boolean> {
+    const userStatus = await this.userTweetStatusService.findOne(userId);
+    if (!userStatus) return true;
+    const threshold = this.configService.get<number>('tweetUpdateAfter');
+    const now = Date.now();
+    if (now - userStatus.updatedAt.getTime() >= (threshold * 86_400_000)) {
+      return true;
+    }
+    return false;
+  }
 
-    console.log({
-      scope: 'TwitterProcessor::handleUserTweets',
-      token,
+  private async getUserTweets(userId: string) {
+    const tweets = [];
+    const tweetPromises = [
+      this.twitterService.getUserTweets(userId),
+      this.twitterService.getLikedTweets(userId),
+    ]
+
+    const [userTweets, userLikedTweets] = await Promise.all(tweetPromises);
+
+    if (userTweets.meta.result_count !== 0) {
+      tweets.push(...userTweets.data);
+    }
+    if (userLikedTweets.meta.result_count === 0) {
+      return tweets;
+    }
+
+    const likedUserLists = userLikedTweets.data.map((tweet) => {
+      tweets.push(tweet);
+      return tweet.author_id;
     });
 
-    const userDetails = await this.twitterService
-      .setUpClient(token.access_token)
-      .getUserDetail();
+    const uniqueLikedUserLists = getUnique(likedUserLists);
 
-    // console.log(await this.twitterService.getUserTweets());
-    const tweets = await this.twitterService.getUserTweets();
+    console.log({
+      scope: 'TwitterProcessor:handleUserTweets',
+      likedUserLists: uniqueLikedUserLists,
+    });
 
-    if (tweets['data'].length > 0) {
-      for (let i = 0; i < tweets['data'].length; i++) {
-        const element = tweets['data'][i];
-        await this.redisService.client.lpush('tweets', JSON.stringify(element));
+    for (let index = 0; index < uniqueLikedUserLists.length; index++) {
+      const userId = uniqueLikedUserLists[index];
+      // Rate Limit 5 call every 15 minutes.
+      // await wait(30000);
+      console.log({
+        scope: 'TwitterProcessor:handleUserTweets',
+        message: `Getting tweets for user: ${userId}`,
+      });
+      const likedUserTweets = await this.twitterService.getUserTweets(userId);
+      if (likedUserTweets.data.length) {
+        tweets.push(...likedUserTweets.data);
       }
     }
 
-    this.eventEmitter.emit('user-tweets', {
-      tweets: tweets['data'],
-      userDetails,
+    return tweets;
+  }
+
+  @Process('user-tweets')
+  async handleUserTweets(job: Job<{ token: any }>) {
+    console.log({
+      scope: 'TwitterProcessor:handleUserTweets',
+      message: 'Processing started.',
     });
+    try {
+      const userDetails = await this.twitterService.getUserDetail();
+      const shouldProcessTweets = await this.shouldProcess(userDetails.id);
+      if (!shouldProcessTweets) { return }
+
+      const tweets = await this.getUserTweets(userDetails.id);
+      console.log({
+        scope: 'TwitterProcessor:handleUserTweets',
+        message: 'User tweets',
+        tweetsCount: tweets.length,
+      })
+
+      if (tweets.length > 0) {
+        const userStatus = await this.userTweetStatusService.findOne(userDetails.id);
+        if (!userStatus) {
+          await this.userTweetStatusService.create(userDetails.id)
+        }
+      }
+
+      if (tweets.length > 0) {
+        for (let i = 0; i < tweets.length; i++) {
+          const element = tweets[i];
+          await this.redisService.client.lpush('tweets', JSON.stringify(element));
+        }
+      }
+
+      this.eventEmitter.emit('user-tweets', {
+        tweets,
+        userDetails,
+      });
+
+      console.log({
+        scope: 'TwitterProcessor:handleUserTweets',
+        message: 'Processing Completed.',
+      });
+    } catch (error) {
+      console.log({
+        scope: 'TwitterProcessor:handleUserTweets',
+        message: 'Failed processing twitter job.',
+        error
+      })
+    }
   }
 }

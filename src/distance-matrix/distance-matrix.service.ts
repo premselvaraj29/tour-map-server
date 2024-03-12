@@ -1,9 +1,21 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 
 @Injectable()
 export class DistanceMatrixService {
+
+  constructor(private readonly configService: ConfigService) {}
+
   async getDistanceMatrix(latLngArr: number[][]) {
+    const mapKey = this.configService.get<string>('gMapKey');
+    if (!mapKey) {
+      console.log({
+        scope: 'DistanceMatrixService::getDistanceMatrix',
+        message: 'Map api key is missing'
+      });
+    }
+
     const result = [];
     const timeResult = [];
     for (let i = 0; i < latLngArr.length; i++) {
@@ -15,7 +27,7 @@ export class DistanceMatrixService {
       }
       let destinationStr = destinations.join('|');
       const URL = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${originStr}
-      &destinations=${destinationStr}&key=AIzaSyCYYEd7y5K5e0kSPk-J39b2jO31qL7es1s`;
+      &destinations=${destinationStr}&key=${mapKey}`;
       const response = await axios.get(URL);
       const elements = response.data.rows[0].elements;
       console.log(elements);

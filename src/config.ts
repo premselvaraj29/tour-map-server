@@ -12,4 +12,6 @@ export default () => ({
   database: {
     uri: process.env.MONGODB_URL,
   },
+  tweetUpdateAfter: process.env.NEXT_TWEET_UPDATED || 10, // In days,
+  gMapKey: process.env.MAP_API_KEY,
 });
