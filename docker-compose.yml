@@ -5,6 +5,10 @@ services:
       - 6379:6379
     volumes:
       - redis:/data
+  routing-service:
+    build: ./routing-service
+    ports:
+      - 5000:5000
 
 volumes:
   redis:
