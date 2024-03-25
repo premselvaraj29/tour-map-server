@@ -82,7 +82,7 @@ export class RecommendationsGateway {
       const placesPromises = [];
 
       for (const key of Object.keys(categorySubCategory)) {
-        const subCategories = categorySubCategory[key];
+        const subCategories = categorySubCategory[key] as string[];
         subCategories.forEach((subCategory) => {
           placesPromises.push(
             this.placesService.getPlaces(`${subCategory} near me`, options),
@@ -90,8 +90,7 @@ export class RecommendationsGateway {
         });
       }
 
-      const places = await Promise.all(placesPromises);
-      return places;
+      return Promise.all(placesPromises);
     }
   }
 }
