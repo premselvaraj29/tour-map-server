@@ -74,7 +74,9 @@ export class RecommendationsGateway {
       console.log(categorySubCategory);
 
       for (const [key, value] of Object.entries(categorySubCategory)) {
-        categorySubCategory[key] = uniq(value as string) as string[];
+        categorySubCategory[key] = (uniq(value as string) as string[]).filter((category) => {
+          return category !== undefined && category !== 'Other'
+        });
       }
 
       const placesPromises = [];
