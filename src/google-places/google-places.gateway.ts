@@ -74,13 +74,15 @@ export class RecommendationsGateway {
       console.log(categorySubCategory);
 
       for (const [key, value] of Object.entries(categorySubCategory)) {
-        categorySubCategory[key] = uniq(value as string) as string[];
+        categorySubCategory[key] = (uniq(value as string) as string[]).filter((category) => {
+          return category !== undefined && category !== 'Other'
+        });
       }
 
       const placesPromises = [];
 
       for (const key of Object.keys(categorySubCategory)) {
-        const subCategories = categorySubCategory[key];
+        const subCategories = categorySubCategory[key] as string[];
         subCategories.forEach((subCategory) => {
           placesPromises.push(
             this.placesService.getPlaces(`${subCategory} near me`, options),
@@ -88,8 +90,7 @@ export class RecommendationsGateway {
         });
       }
 
-      const places = await Promise.all(placesPromises);
-      return places;
+      return Promise.all(placesPromises);
     }
   }
 }

@@ -14,6 +14,7 @@ import { RedisService } from './redis-service/redis.service';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { RedisModule } from './redis-service/redis.module';
 import { DbModule } from './db-service/db.module';
+import { PlacesImageModule } from './places-image/places-image.module';
 
 @Module({
   imports: [
@@ -44,8 +45,9 @@ import { DbModule } from './db-service/db.module';
     RedisModule,
     TwitterModule,
     DbModule,
+    PlacesImageModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }
