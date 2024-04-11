@@ -1,13 +1,12 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from RecommendationUtils import get_main_user_tweets, create_dataframe, create_recommendation,get_user_id
 
 app = Flask(__name__)
-CORS(app)
+CORS(app,origins=['http://www.localhost:4200'])
 
 
-def nearest_neighbor_combined(
-    distance_matrix, time_matrix, time_to_spend, total_time_required
-):
+def nearest_neighbor_combined(distance_matrix, time_matrix, time_to_spend, total_time_required):
     num_places = len(distance_matrix)
     unvisited = set(range(1, num_places))
     current_place = 0
@@ -76,6 +75,25 @@ def calculate_optimal_tour():
         "total_distance": total_distance,
         "total_time": total_time,
     }
+    return jsonify(response)
+
+
+# Define the API route
+@app.route('/recommendations', methods=['POST'])
+def get_recommendations():
+    # Get the username from the request
+    username = request.json['username']
+    user_id=get_user_id(username)
+    print(user_id)
+    df_input= get_main_user_tweets(username)
+    print(df_input)
+    df=create_dataframe(df_input)
+    print(df.head())
+    # Call the function to get the recommendations for the username
+    user_recommendations = create_recommendation(df,username)
+    print(user_recommendations.head())
+    # Convert the recommendations to a JSON response
+    response = {'username': username, 'userId':user_id, 'recommendations': user_recommendations.index.tolist()}
     return jsonify(response)
 
 

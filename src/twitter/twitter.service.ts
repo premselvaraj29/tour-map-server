@@ -83,6 +83,8 @@ export class TwitterService {
   async getUserDetail() {
     const details = (await this.client.users.findMyUser()).data;
     this.userDetails = details as TwitterUser;
+    //console.log(this.userDetails);
+    
     return this.userDetails;
   }
 

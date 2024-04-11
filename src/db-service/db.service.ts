@@ -19,7 +19,7 @@ export class DbService implements OnModuleInit, OnModuleDestroy {
   }
 
   getDb() {
-    return this.client.db('biztrip');
+    return this.client.db('BusinessTrip');
   }
 }
 

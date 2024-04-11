@@ -42,43 +42,43 @@ export class RecommendationsGateway {
       .collection('sentiments')
       .find()
       .toArray();
-    console.log(sentiments);
+    //console.log(sentiments);
 
     if (sentiments[0] !== undefined) {
       const nestedCategories = sentiments[0]['sentiments'].map(
         (i) => i.categories,
       );
-      console.log(nestedCategories);
+      //console.log(nestedCategories);
 
       const categories = flatten(nestedCategories);
       const categorySubCategory = {};
-      console.log(categories);
+     // console.log(categories);
       categories
         //@ts-ignore
         .map((i) => i.name)
         .map((i) => i.split('/')[1])
         .forEach((i) => (categorySubCategory[i] = []));
 
-      console.log(categorySubCategory);
+      //console.log(categorySubCategory);
       categories
         //@ts-ignore
         .map((i) => i.name)
         .map((i) => [i.split('/')[1], i.split('/')[3]])
         //@ts-ignore
         .forEach(([m, s]) => {
-          console.log(m, s);
+          //console.log(m, s);
           //@ts-ignore
           categorySubCategory[m].push(s);
         });
 
-      console.log(categorySubCategory);
+      //console.log(categorySubCategory);
 
       for (const [key, value] of Object.entries(categorySubCategory)) {
         categorySubCategory[key] = (uniq(value as string) as string[]).filter((category) => {
           return category !== undefined && category !== 'Other'
         });
       }
-
+ 
       const placesPromises = [];
 
       for (const key of Object.keys(categorySubCategory)) {

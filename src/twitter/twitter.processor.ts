@@ -116,7 +116,11 @@ export class TwitterProcessor {
       if (tweets.length > 0) {
         for (let i = 0; i < tweets.length; i++) {
           const element = tweets[i];
-          await this.redisService.client.lpush('tweets', JSON.stringify(element));
+          try {
+            await this.redisService.client.lpush('tweets', JSON.stringify(element));
+          } catch (error) {
+            console.error("Error pushing tweet to redis", error)
+          }
         }
       }
 

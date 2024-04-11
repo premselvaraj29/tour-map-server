@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "booming-quasar-403101",
+  "private_key_id": "f0e90b69429c63144cb817cc85f9c760cf4f9433",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDrmqeSscQ/nC9+\nKvuKK2qljLx5v8YqfCvmpp2a33hsRRiPuv9/f6dc0KdDp42pQjnXg16p5YSYgOOy\nEkVPlUgDhxlX2PUYP4U8mM9Vjx+30HSorUtXl59Mt4AQUu07F9nLcJ0lh6TdEfge\nLVMKYTcLbXglOb53PBCkOqXlsbQNpYaOa3Cnxe7uySTgJ1FRScTl96YeLBht/wa4\nzjkMFjO7KPaZslvBK7+jOhKjEsF5qDIEQT3GKm/efuz+q5RPR10jtIA963h+j2IH\nxxfQlHi6oyZtsq4ZO4kXUUKFXTNZyPgbRiH7BO++0zCEmr4t4yizZJtZfF44uERz\n9llJN7LBAgMBAAECggEAGjIaHyyeQB9WxX20dZahtzH4c8X/m9IuFGlinSlrK4ic\nNEDrrwqrul1lt5c94DuhkEWGRTgkf8tW5cHzzGcx+FhxWCvihnVrlEL+TIpLEcY+\n7lFETwMn/mDpv4bk4xziBaVqB5X3HfBlSL+r27vW4bGkeekbdQjr5cKyluEk/p46\nAAi0iQONex6NT6dAwV9x3Dzv1+PWMNhEcQFOc2wSvsbCWkSuec0ShGL5RfcXRQ/s\nQHH41YpLMSAi1uMq7nZHsJwia3JK3F/cMYZ8Ng/ReBNL6jix1l7rDe8bjpJbIj8E\nK30EeueCSUzWGrz5ulszRliY74ldSCHbT3IZCA7OpQKBgQD79IxNX42V+6Ff9qdt\nJRbQ1juwoi0shuChAdy3Stt1pN/rEJ1utra9OCkjplijCUV9F4a1lh1lVxaza3hp\nt7ju+yM9aNyT7W2bjrWeXVZN2geKXZJmvxaS3i2kYyvNktyWBCWYsIP4QrvFZb8C\nyD1FDXzZGmIJKj/D0aFZGw6XtQKBgQDvYuilvzFCfEjAhatD6ZTMHBKgmiRIJRxv\n+zJYUSpdcYhOEPReCRyPw/o5RIrJmRabptV8dj2e8rCFAM2xddAszHuwVjApPGBa\nLEfKE7nZestEUc1P01L6mjQxEWTeLjT6Z/W4Tzz85tzmdWCjeBhPd6P/DkRrFaaA\nXCiYJfH+XQKBgDHe2daGz1OclviTrdgguz9i6DWyJBboK5Yy9CkjnATRObEhfMfp\nSopxj1MLHghHUYXNHlDbAb6JWmjxIMhsISLMetEw7FgrasKboL9T4j1OpqdwlgXY\nVPOFHqunJYhvRVI8R+TNK5H8Q4Zy+Tfnwpjkbo3adwUxY6Wy3KjyfhTxAoGBAMQt\nvpL2mJvv1n9QDAbfyb1r1CghqlIld6Sdq6iM+7cQb6/qXRkjRnDbHpkH/uUvvENa\n+eHB1MYKBXc6LVedQTk1argcKePhQuUjHMISYGBGLYaTszoT6RDOhq8fnhYmr+v2\nfnzJEyX+3FFRKB1PMj0NwywmuRM47vaKkAoALs1RAoGBAJmWazUkqSlRnYzbYjwf\nTTnuljKTl+6oNJeqO+R6W3WOA5RIeK7kDwZS0r1ILzT1I0huximyL3C7SPTvwGXf\n97SaOkTYhRZHJQqUOqGODeldNTGq+cYHQ9WxtJR2nRckA8Oh4N5GHhXNuYz6X9cr\ntZnxbVUIdOhWcATr0ZBVLIca\n-----END PRIVATE KEY-----\n",
+  "client_email": "business-trip-app@booming-quasar-403101.iam.gserviceaccount.com",
+  "client_id": "105790733308084139586",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/business-trip-app%40booming-quasar-403101.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

@@ -31,6 +31,8 @@ export class TwitterController {
 
     // Trigger twitter job to get user data
     this.twitterQueue.add('user-tweets', { token }).catch((error) => {
+      console.log('Error adding job to queue');
+      
       Logger.log({ error }, 'Queue');
     });
 

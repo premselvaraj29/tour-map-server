@@ -15,14 +15,15 @@ export class NaturalLanguageService {
   async analyze(tweets: { text: string }[]) {
     const results: ITextAnalysisResult[] = [];
     for (const tweet of tweets) {
-      const client = new language.v1.LanguageServiceClient();
+      const client = new language.v1.LanguageServiceClient({
+        keyFilename:
+          './src/natural-language/booming-quasar-403101-f0e90b69429c.json',
+      });
       const document = {
         content: tweet.text,
         type: 'PLAIN_TEXT' as const,
       };
-      const result = await client.analyzeSentiment({ document });
-      // console.log(result);
-      const sentiment = result[0].documentSentiment;
+      console.log(tweet.text);
 
       const classificationModelOptions = {
         v2Model: {
@@ -34,35 +35,59 @@ export class NaturalLanguageService {
         document: document,
         classificationModelOptions,
       });
-      // console.log('TEXT CLASSIFICATION IS ');
-      // console.log(responseCategories[0].categories);
+      // Check if the language is supported
+      const supportedLanguages = [
+        'en',
+        'es',
+        'ja',
+        'zh',
+        'fr',
+        'de',
+        'it',
+        'ko',
+        'pt',
+        'ru',
+      ];
 
-      if (sentiment.score > 0.1) {
-        //If the score is greater than 0.1, then the sentiment is positive
-        results.push({
-          score: sentiment.score,
-          magnitude: sentiment.magnitude,
-          categories: responseCategories[0].categories
-            .filter((c) => c.confidence >= 0.3) //Filter out categories with low confidence
-            .map((c) => ({
-              name: c.name,
-              confidence: c.confidence,
-            })),
-        });
+      try {
+        const result = await client.analyzeSentiment({ document });
+        const sentiment = result[0].documentSentiment;
+
+        // console.log('TEXT CLASSIFICATION IS ');
+        // console.log(responseCategories[0].categories);
+
+        if (sentiment.score > 0.1) {
+          //If the score is greater than 0.1, then the sentiment is positive
+          results.push({
+            score: sentiment.score,
+            magnitude: sentiment.magnitude,
+            categories: responseCategories[0].categories
+              .filter((c) => c.confidence >= 0.3) //Filter out categories with low confidence
+              .map((c) => ({
+                name: c.name,
+                confidence: c.confidence,
+              })),
+          });
+        }
+      } catch (error) {
+        console.error(error);
+        continue;
       }
+      // console.log(result);
     }
+    console.log('Results are ', results);
+
     return results;
   }
 
   @OnEvent('user-tweets')
   async handleUserTweets(payload: { tweets: any[]; userDetails: any }) {
-
     console.log({
       scope: 'NaturalLanguageService::handleUserTweets',
       message: 'Received user-tweets event',
       tweetsLength: payload.tweets.length,
-      userDetails: payload.userDetails
-    })
+      userDetails: payload.userDetails,
+    });
 
     const results = await this.analyze(payload.tweets);
     const dbPayload = {

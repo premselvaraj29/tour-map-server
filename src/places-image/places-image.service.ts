@@ -70,10 +70,10 @@ export class PlacesImageService {
   public async getImage(placeId: string, referenceId: string) {
     const placeImage = await this.findImageByReference(placeId)
     if (placeImage) {
-      console.log({
-        scope: 'PlacesImageService::findImageByReference',
-        message: 'Returning image from datastore.'
-      })
+      // console.log({
+      //   scope: 'PlacesImageService::findImageByReference',
+      //   message: 'Returning image from datastore.'
+      // })
       return placeImage.image.buffer
     }
     const { imageBuffer } = await this.getImageFromCloud(placeId, referenceId);
